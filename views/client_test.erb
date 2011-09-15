@@ -1,0 +1,196 @@
+
+<!DOCTYPE html> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
+<head> 
+	<title>Twilio Client Browser Check</title> 
+	<link rel="stylesheet" type="text/css" href="install.css" /> 
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script> 
+	<script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script> 
+	<script type="text/javascript" src="flash_detect_min.js"></script> 
+</head> 
+<body>
+	<div id="install-container"> 
+		<form id="install-form" method="post" action="/index.php/install/setup"> 
+		<div class="steps"> 
+			<div id="step-1" class="step"> 
+				<a target="_blank" class="help" href="http://www.twilio.com/faq/client" title="Get help at Twilio.com">FAQ</a>
+				<h1>Twilio Client Browser Check</h1> 
+				<div class="step-desc"> 
+					<p>This page will check your browser configuration. <br/>If all tests are successful you will hear a glorious cowbell.</p> 
+				</div> 
+				<ul class="dependencies"> </ul> 
+			</div> 
+	 	</div> 
+		<div align="center" id="spinny"> <img src="ajax-spinner.gif"></div>
+		</form> 
+	</div>
+
+
+	<% if @lion %>
+		<div id="lion" class="upgrade-warning result" style="width:700px;" > 
+		  <p> 
+		    There is a known issue with Mac OS X Lion where it is not possible to give Flash permissions to your mic via the Flash Dialog.  Fear not, <a href="https://bugbase.adobe.com/index.cfm?event=bug&id=2918693">a fix is in the works</a>.
+		    For now, we wanted to show you a workaround so you that get started with Twilio Client. <a href="http://www.twilio.com/help/lion-tamer">Read more on how to be a Lion tamer</a>.
+		  </p> 
+		</div>
+	<% end %>
+	
+	<div id="flashplayer" align="center" style="margin:20px; display:none;"><a href="http://get.adobe.com/flashplayer/" style="font-weight:bold; font-size:24px; color:black;">Click to download the latest Flash Player</a></div>
+
+	<div align="center" class="upgrade-warning result" style="display:none;" id="resultdiv">
+		<div id="resulttext" style="font-size:1.3em; margin:4px;"></div>
+		Copy this information into your support ticket:
+		<br style="clear:both;">
+		<textarea id="out" cols="40" rows="7"></textarea>
+	</div>
+
+
+
+	<div style="position: relative;left:0.1px; width:1px; height:1px; background-color: #F7F7F7;" >
+		<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0" width="1" height="1" id="myMovie" align="middle">
+		<param name="allowScriptAccess" value="always" />
+		<param name="movie" value="mic.swf" />
+		<param name="quality" value="high" />
+		<param name="bgcolor" value="#ffffff" />
+		<embed src="mic.swf" quality="high" bgcolor="#ffffff" width="1" height="1" name="myMovie" align="middle" allowScriptAccess="always" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
+		</object>
+	</div>
+
+
+
+
+	<script language="javascript">var js_version="1.0"</script>
+	<script language="javascript1.1">var js_version="1.1"</script>
+	<script language="javascript1.2">var js_version="1.2"</script>
+	<script language="javascript1.3">var js_version="1.3"</script>
+	<script language="javascript1.4">var js_version="1.4"</script>
+	<script language="javascript1.5">var js_version="1.5"</script>
+	<script language="javascript1.6">var js_version="1.6"</script>
+
+
+	<script type="text/javascript"> 
+
+		var mics=null;
+		var logtext='User agent: <%= request.env['HTTP_USER_AGENT'] %>\n';
+		var success=false;
+		function ClientTestResult (name,version_detected,pass) {
+		    this.name = name;
+		    this.version_detected = version_detected;
+			this.pass=pass;
+		}
+
+		ClientTestResult.prototype.foo = function() {
+		    return this.name + ' ' + this.version_detected ;
+		};
+
+		function hasFlashInstalled(){
+			return FlashDetect.installed;
+		}
+		function flashVersion(){
+			return FlashDetect.raw	
+		}
+		function flash_supported(){
+			return FlashDetect.majorAtLeast(10) && FlashDetect.minorAtLeast(1);
+		}
+		function flash_validation(){
+			if (hasFlashInstalled())
+				return new ClientTestResult('Adobe Flash Version', flashVersion(), hasFlashInstalled && FlashDetect.majorAtLeast(10) && FlashDetect.minorAtLeast(1));
+			else
+				return new ClientTestResult('Adobe Flash Version', "not installed", false);
+		}
+		function microphone_validation(){
+			try{
+				return new ClientTestResult('Microphone', mics[0], mics.length>0);
+			}	catch(err)
+			{
+				return new ClientTestResult('Microphone', err.description, false);
+			}
+		}
+
+		function flashLoaded(){
+			micNames();
+		}
+		function micNames() {
+			mics=getMovieName("myMovie").micNames(); 
+			runTest(microphone_validation());
+		}
+
+		function getMovieName(movieName) {
+		    if (navigator.appName.indexOf("Microsoft") != -1) {
+		        return window[movieName]
+		   }
+		   else {
+		       return document[movieName]
+		   }
+		}
+		function finish(){
+			if (success){
+				$('#resulttext').html('Congratulations, all tests have passed.');
+				$('#resultdiv').css('background-color', '#74C729');
+			} else {
+				$('#resultdiv').css('background-color', '#CA3A26');
+				$('#resulttext').html('The browser test was not successful.');
+			}
+			$('#out').val(logtext);
+			$('#resultdiv').show();
+			$('#spinny').hide();
+		}
+		
+		setTimeout("finish()",12000);
+		
+		$(document).ready(function() {
+		   var steps=['hasFlashInstalled','flash_supported'];
+
+
+				
+			runTest(new ClientTestResult('Javascript', 'version '+ js_version, true));
+ 			runTest(new ClientTestResult('Browser Version', '<%= @browser %>', <%= @browser_compatible.to_s %>));
+			runTest(flash_validation());
+			
+			Twilio.Device.setup("<%= @token %>", {'debug':true});
+
+			Twilio.Device.ready(function (device) {
+	 			runTest(new ClientTestResult('Twilio Client', 'Device.ready', true));
+				//Twilio.Device.connect();
+				setTimeout(Twilio.Device.connect,2000);
+			});
+
+			Twilio.Device.error(function (error) {
+	 			runTest(new ClientTestResult('Twilio Client', error.message, false));
+			});
+
+			Twilio.Device.connect(function (conn) {
+	 			runTest(new ClientTestResult('Twilio Client', 'Device.connect', true));
+				success=true;
+				finish();
+				
+			});
+			
+
+
+		 });
+		
+
+			function runTest(testResult){
+				if (testResult.pass==true){
+					li_class='pass';
+					status_text='OK'
+				} else {
+					li_class='fail';
+					status_text='NO'
+					success=false;
+					finish();
+				}
+				logtext = logtext + testResult.name + ': ' + status_text  + ' (' + testResult.version_detected + ')\n';
+				$(".dependencies").append('<li class="' + li_class + ' required"> <span class="req-status">' + status_text + '</span> <p class="req-name">' + testResult.name + '</p> <p class="req-info">' + testResult.version_detected + '</p> </li>');
+			}
+
+if (window.console){
+	window.console.log = function(msg) { logtext = logtext + msg + '\n'; } 
+}
+		
+	</script>
+<!--<input type="button" onclick="Twilio.Device.connect();" value="Connect">-->
+	</body> 
+</html>
+ 
