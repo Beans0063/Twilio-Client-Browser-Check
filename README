@@ -1,2 +1,7 @@
 Source for Twilio Client Browser Check
 http://clientsupport.twilio.com/
+
+The essential checks are:
+Javascript enabled
+Flash >= 10.1
+Device.ready callback loads
