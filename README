@@ -3,6 +3,7 @@ http://clientsupport.twilio.com/
 
 The essential checks are:
 Javascript enabled
+Firefox >= 3.6, IE 7,8,9, Safari >= 5, Chrome >= 11
 Flash >= 10.1
 Device.ready callback loads
 
