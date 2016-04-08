@@ -3,9 +3,14 @@ require 'bundler'
 Bundler.require
 
 configure do
-  set :twilio_account_sid, "ACXXXXXXXXXX"
-  set :twilio_auth_token, "XXXXXXXXXXXX"
-  set :twilio_app_sid, "APXXXXXXXXXX"
+  set :twilio_account_sid, ENV['ACCOUNT_SID']
+  set :twilio_auth_token, ENV['AUTH_TOKEN']
+  set :twilio_app_sid, ENV['APP_SID']
+end
+
+helpers do
+  include Rack::Utils
+  alias_method :h, :escape
 end
 
 get '/' do
@@ -51,8 +56,10 @@ end
 
 def browser_version
   version=''
-  result  = request.env['HTTP_USER_AGENT']
-  if result =~ /Safari/
+  result  = request.env['HTTP_USER_AGENT'] || ""
+  if result =~ /CriOS/
+    version = result.split('CriOS/')[1].split(' ').first#.split('.').first
+  elsif result =~ /Safari/
     unless result =~ /Chrome/
       version = result.split('Version/')[1].split(' ').first#.split('.').first
     else

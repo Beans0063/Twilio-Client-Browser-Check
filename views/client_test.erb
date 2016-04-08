@@ -5,8 +5,8 @@
 	<title>Twilio Client Browser Check</title> 
 	<link rel="stylesheet" type="text/css" href="install.css" /> 
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script> 
-	<script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script> 
-	<script type="text/javascript" src="flash_detect_min.js"></script> 
+  <script type="text/javascript" src="//media.twiliocdn.com/sdk/js/client/v1.3/twilio.min.js"></script>
+  	<script type="text/javascript" src="flash_detect_min.js"></script> 
 </head> 
 <body>
 	<div id="install-container"> 
@@ -71,7 +71,7 @@
 	<script type="text/javascript"> 
 
 		var mics=null;
-		var logtext='User agent: <%= request.env['HTTP_USER_AGENT'] %>\n';
+		var logtext='User agent: <%= h request.env['HTTP_USER_AGENT'] %>\n';
 		var success=false;
 		function ClientTestResult (name,version_detected,pass) {
 		    this.name = name;
@@ -94,7 +94,7 @@
 		}
 		function flash_validation(){
 			if (hasFlashInstalled())
-				return new ClientTestResult('Adobe Flash Version', flashVersion(), hasFlashInstalled && FlashDetect.majorAtLeast(10) && FlashDetect.minorAtLeast(1));
+				return new ClientTestResult('Adobe Flash Version', flashVersion(), hasFlashInstalled && (FlashDetect.major==10 && FlashDetect.minorAtLeast(1) || FlashDetect.majorAtLeast(11)));
 			else
 				return new ClientTestResult('Adobe Flash Version', "not installed", false);
 		}
